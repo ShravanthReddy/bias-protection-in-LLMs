@@ -1,11 +1,13 @@
 import os
 import openpyxl
 import time
+import boto3
+ssm = boto3.client('ssm', 'us-east-2')
 
 import google.generativeai as genai
 
-from dotenv import load_dotenv
-load_dotenv()
+response = ssm.get_parameters(Names=['GOOGLE_API_KEY'],WithDecryption=True)
+params = response['Parameters'][0]
 
 safety_settings = [
     {
@@ -30,7 +32,7 @@ safety_settings = [
     },
 ]
 
-genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+genai.configure(api_key=params['Value'])
 
 class Workbook(BaseException):
     def __init__(self, workbook):
@@ -51,9 +53,9 @@ class Workbook(BaseException):
     def process_sheets(self, iterations, sheet_idx):
         self.get_sheets(sheet_idx)
 
+        question_selector = int(input("\nPlease enter a question no to run the script for that specific question or 0 for all the questions: "))
         for sheet in self.sheets:
             print(f'\nExtracting questions from sheet: {sheet.title}... ')
-            question_selector = int(input("\nPlease enter a question no to run the script for that specific question or 0 for all the questions: "))
 
             for i in range(iterations):
                 sheet.cell(row=1, column=i * 2 + 4).value = "Response " + str(i + 1)
@@ -106,7 +108,7 @@ class Workbook(BaseException):
 def main():
     try:
         # Load the Excel file
-        workbook = openpyxl.load_workbook(os.getcwd() + '/data_file.xlsx')
+        workbook = openpyxl.load_workbook(os.getcwd() + '/data_file_gemini.xlsx')
         workbook_obj = Workbook(workbook)
 
         iterations = int(input("How many iterations do you want to run on each question? "))
