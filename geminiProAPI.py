@@ -92,6 +92,7 @@ class Workbook(BaseException):
                                 genai.configure(api_key=params_2['Value'])
                                 request_count = 0
 
+                            print("Request count: ", request_count)
                             response = model.generate_content(question_gemini, safety_settings=safety_settings)
                             request_count += 1
                             print("Gemini Response: ", response.text)
