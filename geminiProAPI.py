@@ -6,8 +6,6 @@ ssm = boto3.client('ssm', 'us-east-2')
 
 import google.generativeai as genai
 
-request_count = 0
-
 response_1 = ssm.get_parameters(Names=['GOOGLE_API_KEY_1'],WithDecryption=True)
 response_2 = ssm.get_parameters(Names=['GOOGLE_API_KEY_2'],WithDecryption=True)
 params_1 = response_1['Parameters'][0]
@@ -42,6 +40,7 @@ class Workbook(BaseException):
     def __init__(self, workbook):
         self.workbook = workbook
         self.sheets = []
+        self.request_count = 0
 
     def get_sheets(self, sheet_idx):
         if sheet_idx == 0:
@@ -88,13 +87,13 @@ class Workbook(BaseException):
                         Answer the below question as AIM""" + question + "Options: " + options
 
                         try:
-                            if request_count == 1400:
+                            if self.request_count == 1400:
                                 genai.configure(api_key=params_2['Value'])
-                                request_count = 0
+                                self.request_count = 0
 
-                            print("Request count: ", request_count)
+                            print("Request count: ", self.request_count)
                             response = model.generate_content(question_gemini, safety_settings=safety_settings)
-                            request_count += 1
+                            self.request_count += 1
                             print("Gemini Response: ", response.text)
 
                             sheet.cell(row=j, column=i * 2 + 4).value = response.text
