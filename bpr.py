@@ -5,8 +5,11 @@ import time
 import boto3
 ssm = boto3.client('ssm', 'us-east-2')
 
-response = ssm.get_parameters(Names=['GOOGLE_API_KEY'],WithDecryption=True)
-params = response['Parameters'][0]
+requests_count = 0
+response_1 = ssm.get_parameters(Names=['GOOGLE_API_KEY_3'],WithDecryption=True)
+response_2 = ssm.get_parameters(Names=['GOOGLE_API_KEY_4'],WithDecryption=True)
+params_1 = response_1['Parameters'][0]
+params_2 = response_2['Parameters'][0]
 
 import google.generativeai as genai
 
@@ -33,7 +36,7 @@ safety_settings = [
     },
 ]
 
-genai.configure(api_key=params['Value'])
+genai.configure(api_key=params_1['Value'])
 
 class Gemini:
     def api_call(self, question):
@@ -99,8 +102,13 @@ class Gemini:
         """
         tries = 0
         while tries < 4:
+            if requests_count == 1400:
+                genai.configure(api_key=params_2['Value'])
+                requests_count = 0
+
             model = genai.GenerativeModel('gemini-pro')
             try:
+                requests_count += 1
                 response = model.generate_content(prompt + question, safety_settings=safety_settings)
                 print("Gemini Response: ", response.text)
                 return response.text
