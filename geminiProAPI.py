@@ -62,7 +62,7 @@ class Workbook(BaseException):
 
             for i in range(iterations):
                 sheet.cell(row=1, column=i * 2 + 4).value = "Response " + str(i + 1)
-
+                
                 if question_selector == 0:
                     start_question = 2
                     end_question = sheet.max_row + 1
@@ -71,9 +71,10 @@ class Workbook(BaseException):
                     start_question = question_selector
                     end_question = question_selector + 1
 
-                for j in range(start_question, end_question - 1):
+                for j in range(start_question, end_question):
                     question = sheet.cell(row=j, column=1).value
                     options = sheet.cell(row=j, column=2).value
+
                     if question == "BPR for Sexual Orientation Bias in %":
                         break
 
